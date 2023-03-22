@@ -1,0 +1,32 @@
+---
+# Подключаемся к удаленным серверам и создаем там пользователя user1
+# После копируем ему заранее созданный SSH ключ в   id_rsa.pub
+- name: Create user
+  # Будем подключаться к серверам из файла inventory 
+  # так как мы за безопасность файл инвентори зашифрован через vault
+  hosts: server1
+  tasks:
+    # Создаем пользователя user1 с bash 
+    # По умолчанию ansible создаст home дирексторию 
+    - name: Add user user1 on server
+      ansible.builtin.user:
+        name: user1
+        shell: /bin/bash
+    # Создаем папку .ssh для ключей 
+    - name: Create ssh dir on user1
+      ansible.builtin.file:
+        path: ~user1/.ssh
+        state: directory
+        owner: user1
+        group: user1
+        mode: 0700
+    # Копируем заранее созданный SSH ключ в ~user1/.ssh/id_rsa.pub
+    # так как мы за безопасность файл ssh зашифрован через vault
+    - name: Upload SSH Key
+      ansible.builtin.copy:
+        src:  /root/ansible/vault/keys/file
+        dest: ~user1/.ssh/id_rsa.pub
+        owner: user1
+        group: user1
+        mode: 0700
+

@@ -1,0 +1,8 @@
+# Плейбук сочитающий в себе 2 роли по nginx-php и dbsnasq
+---
+- hosts: localhost 
+  gather_facts: no
+  become: yes
+  roles:
+    - nginx-php
+    - dnsmasq

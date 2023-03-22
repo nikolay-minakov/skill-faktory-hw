@@ -1,0 +1,44 @@
+---
+    # Playbook для Установки docker на ubuntu
+    # Устанавливаем все необходимое 
+    - name: Install required system packages
+      apt:
+        pkg:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+        state: latest
+        update_cache: true
+
+    # Добовляем repo и ключ.
+    - name: Add Docker GPG apt Key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker Repository
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu focal stable
+        state: present
+
+    # Обновляем cache ubuntu
+    - name: Update apt and install docker-ce and docker-compose
+      apt:
+        pkg:
+          - docker-ce
+          - docker-compose
+        state: latest
+        update_cache: true
+
+    # Включаем Docker как демон что при старте работал
+    - name: Enable Docker systemd
+      ansible.builtin.systemd:
+        name: docker
+        enabled: true
+        masked: no
+    # Запускаем сам демон Docker и радуемся что все работает!!!
+    - name: Start Docker Service
+      ansible.builtin.systemd:
+        name: docker
+        state: started

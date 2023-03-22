@@ -1,0 +1,31 @@
+---
+# tasks для vsftpd
+
+# vsftpd есть в базовом пакете Centos поэтому просто устанавливаем
+- name: Install vsftpd 
+  ansible.builtin.yum:
+    name: vsftpd
+
+# Включаем vsftpd как демон чтоб при рестарте стартовал
+- name: Enable vsftpd systemd
+  ansible.builtin.systemd:
+    name: vsftpd
+    enabled: true
+    masked: no
+
+# Копируем заранее созданный и сохраненный в папку file конфиг vsftpd
+- name: Copy vsftpd.conf
+  ansible.builtin.copy:
+    src:  vsftpd.conf
+    dest: /etc/vsftpd/vsftpd.conf
+    owner: root
+    group: root
+
+# Запускаем vsftpd
+- name: Start vsftpd
+  ansible.builtin.systemd:
+    name: vsftpd
+    state: started
+
+
+

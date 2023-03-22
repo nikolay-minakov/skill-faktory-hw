@@ -1,0 +1,30 @@
+---
+# tasks file for php
+
+- name: Install php
+  ansible.builtin.yum:
+    name:
+      - php
+      - php-fpm
+
+
+- name: Enable php-fpm systemd
+  ansible.builtin.systemd:
+    name: php-fpm
+    enabled: true
+    masked: no
+
+- name: Copy phpinfo.php
+  ansible.builtin.copy:
+    src:  www.conf
+    dest: /etc/php-fpm.d/www.conf
+    owner: apache
+    group: apache
+    mode: u=rw,g=r,o=r
+
+- name: Start php-fpm
+  ansible.builtin.systemd:
+    name: php-fpm
+    state: started
+
+

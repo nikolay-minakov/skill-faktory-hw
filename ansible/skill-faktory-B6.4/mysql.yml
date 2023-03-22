@@ -1,0 +1,25 @@
+---
+# Инструкцию по установке mysql нашел на оф сайте.
+
+- hosts: localhost
+  gather_facts: true
+  tasks:
+      # Устанавливаем mysql repo
+      - name: Install mysql-repo
+        ansible.builtin.yum:
+          name: https://dev.mysql.com/get/mysql80-community-release-el7-3.noarch.rpm
+      # Устанавливаем сам сервер
+      - name: Install mysql-server
+        ansible.builtin.yum:
+          name: mysql-server
+      # Включаем mysql как демон
+      - name: Enable Mysql systemd
+        ansible.builtin.systemd:
+          name: mysqld
+          enabled: true
+          masked: no
+      # Стартуем сам сервер. 
+      - name: Start Mysql Service
+        ansible.builtin.systemd:
+          name: mysqld
+          state: started

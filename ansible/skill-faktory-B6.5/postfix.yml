@@ -1,0 +1,43 @@
+---
+# Инструкцию по установке postfix нащел в нете.
+
+# Будем ставить на localhos но это не принцепиально. Можем и на любые другие.
+- hosts: localhost
+  gather_facts: true
+  tasks:
+      # Устанавливаем сервер postfix. Postfix входит в  Unix стандарт поэтому есть в стандартном репо.
+      # Отдельно добовлять Repo не нужно.
+      - name: Install Postfix
+        ansible.builtin.yum:
+          name: postfix
+        tags:
+        - "init postfix"
+      # Включаем Postfix как демон
+      - name: Enable Postfix systemd
+        ansible.builtin.systemd:
+          name: postfix
+          enabled: true
+          masked: no
+        tags:
+        - "init postfix"
+      # Стартуем сам сервер.
+      - name: Start Postfix Service
+        ansible.builtin.systemd:
+          name: postfix
+          state: started
+        tags:
+        - "init postfix"
+      # Останавливаем Postfix
+      - name: Stop Postfix
+        ansible.builtin.systemd:
+          name: postfix
+          state: stopped
+        tags:
+        - "drop postfix"
+      # Удаляем Postfix через yum
+      - name: Delete Postfix
+        ansible.builtin.yum:
+          name: postfix
+          state: absent
+        tags:
+        - "drop postfix"

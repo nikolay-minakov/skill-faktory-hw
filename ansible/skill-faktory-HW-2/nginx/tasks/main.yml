@@ -1,0 +1,47 @@
+---
+# tasks file for nginx
+
+- name: Install nginx
+  ansible.builtin.yum:
+    name: 
+      - nginx
+
+- name: Enable nginx systemd
+  ansible.builtin.systemd:
+    name: nginx
+    enabled: true
+    masked: no
+
+
+- name: Create root Dir for nginx-php
+  ansible.builtin.file:
+     path:  /opt/nginx/ansible
+     state: directory
+     mode: '0755'
+
+- name: Copy phpinfo.php
+  ansible.builtin.copy:
+    src:  phpinfo.php
+    dest: /opt/nginx/ansible/index.php
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+
+- name: Copy nginx.conf
+  ansible.builtin.copy:
+    src:  nginx.conf
+    dest: /etc/nginx/nginx.conf
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  notify:
+      - Restart nginx
+
+
+- name: Start nginx
+  ansible.builtin.systemd:
+    name: nginx
+    state: started
+
+
+

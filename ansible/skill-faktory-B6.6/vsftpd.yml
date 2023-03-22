@@ -1,0 +1,7 @@
+# Запускаем установка vsftpd изпользуя роль на локальный хост
+---
+- hosts: localhost 
+  gather_facts: no
+  become: yes
+  roles:
+    - vsftpd

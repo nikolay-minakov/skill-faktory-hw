@@ -1,0 +1,15 @@
+# Основной playbook в котором идет вызов ролей
+---
+- hosts: nginx
+  gather_facts: no
+  become: yes
+  roles:
+    - users
+    - nginx
+ 
+- hosts: php
+  gather_facts: no
+  become: yes
+  roles:
+    - users
+    - php

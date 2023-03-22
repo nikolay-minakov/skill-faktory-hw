@@ -1,0 +1,46 @@
+---
+# tasks file for dnsmasq
+# Инструкция по установки dnsmasq взята отсюда
+# https://redos.red-soft.ru/base/server-configuring/customize-dns/caching-dns-server-with-dnsmasq/
+
+- name: Install dnsmasq
+  ansible.builtin.yum:
+    name: dnsmasq
+
+- name: Enable dnsmasq systemd
+  ansible.builtin.systemd:
+    name: dnsmasq
+    enabled: true
+    masked: no
+
+- name: Copy dnsmasq.conf
+  ansible.builtin.copy:
+    src:  dnsmasq.conf
+    dest: /etc/dnsmasq.conf
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+
+- name: Copy resolv.dnsmasq
+  ansible.builtin.copy:
+    src:  resolv.dnsmasq
+    dest: /etc/resolv.dnsmasq
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+
+- name: Copy resolv.conf
+  ansible.builtin.copy:
+    src:  resolv.conf
+    dest: /etc/resolv.conf
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+
+- name: Start dnsmasq
+  ansible.builtin.systemd:
+    name: dnsmasq
+    state: started
+
+
+

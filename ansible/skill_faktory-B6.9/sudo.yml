@@ -1,0 +1,28 @@
+--- 
+# Плейбук по созданию uperuser группы
+
+- name: Create superusers
+  hosts: localhost
+  tasks:
+    # создаем группу с именем superuser
+    - name: Create superuser group
+      group:
+        name: superuser
+        state: present
+    # создаем пользователей с группой superuser
+    - name: Create  user2
+      user:
+        name: user2
+        group: superuser
+    - name: Create  user3
+      user:
+        name: user3
+        group: superuser
+    # Редактируем /etc/sudoers и разрешаем всем из группы superuser брать права root
+    - name: Give sudo access to devops user
+      blockinfile:
+        path: /etc/sudoers
+        insertafter: 'root    ALL=(ALL)       ALL'
+        block: |
+          %superuser        ALL=(ALL)       NOPASSWD: ALL
+

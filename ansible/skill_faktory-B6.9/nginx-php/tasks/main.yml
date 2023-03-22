@@ -1,0 +1,67 @@
+---
+# Устанавливаем и настраиваем NGINX+PHP-FPM инструкцию нашел в нете
+
+# Устанавливаем необходимое
+- name: Install nginx+php
+  ansible.builtin.yum:
+    name: 
+      - nginx
+      - php 
+      - php-fpm
+
+# Включаем nginx в атозагрузку
+- name: Enable nginx systemd
+  ansible.builtin.systemd:
+    name: nginx
+    enabled: true
+    masked: no
+
+# Включаем php-fpm в атозагрузку
+- name: Enable php-fpm systemd
+  ansible.builtin.systemd:
+    name: php-fpm
+    enabled: true
+    masked: no
+
+# Создаем root директорию где будет хранить php код
+- name: Create root Dir for nginx-php
+  ansible.builtin.file:
+     path:  /opt/nginx/ansible
+     state: directory
+     mode: '0755'
+
+# Копируем файлс с hpinfo в index.php root дерриктории
+- name: Copy phpinfo.php
+  ansible.builtin.copy:
+    src:  phpinfo.php
+    dest: /opt/nginx/ansible/index.php
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+
+# Копируем nginx конфиг и перечитывем конфигурацию
+# На задании висит handler описанный в role/handlers/main.yml
+- name: Copy nginx.conf
+  ansible.builtin.copy:
+    src:  nginx.conf
+    dest: /etc/nginx/nginx.conf
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  notify:
+      - Restart nginx
+
+# Запускаем php
+- name: Start php-fpm
+  ansible.builtin.systemd:
+    name: php-fpm
+    state: started
+
+# Запускаем nginx
+- name: Start nginx
+  ansible.builtin.systemd:
+    name: nginx
+    state: started
+
+
+

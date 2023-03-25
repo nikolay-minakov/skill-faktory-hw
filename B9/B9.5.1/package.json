@@ -1,0 +1,19 @@
+{
+  "name": "b9.5.1_sf_npm_project",
+  "version": "1.0.0",
+  "description": "Test npm for SkillFactory",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nikolay-minakov/skill-faktory-hw.git#main"
+  },
+  "author": "Iam",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nikolay-minakov/skill-faktory-hw/issues"
+  },
+  "homepage": "https://github.com/nikolay-minakov/skill-faktory-hw/tree/main#readme"
+}

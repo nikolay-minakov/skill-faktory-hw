@@ -1,0 +1,17 @@
+{
+    "name": "nikolayminakov/b9.2.8",
+    "autoload": {
+        "psr-4": {
+            "Nikolayminakov\\B928\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Nikolay Minakov",
+            "email": "minakov-1994@inbox.ru"
+        }
+    ],
+    "require": {
+        "swiftmailer/swiftmailer": "^6.3"
+    }
+}

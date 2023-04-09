@@ -1,0 +1,41 @@
+# Используем базовый ubuntu image
+image: "ubuntu:latest"
+
+
+# Включаем правила запуска paypline
+# Запускаем наш paypline только в том случае если 
+# изменения были в файле select.sql 
+workflow:
+  rules:
+    - changes:
+        - select.sql
+
+
+
+# Указываем наши stage
+# У нас пока один stage
+stages:
+  - runselect
+
+
+#Описываем наш stage
+runselect:
+  # Указываем какой image использовать
+  # В нашем случае не актуально 
+  # но если будем делать кучу stage то полезно
+  image: alpine:latest
+  stage: runselect
+  # Вешаем tag для запуска на gitlab-runner
+  # так как у нас он запускает только с тегами
+  tags:
+    - skillfaktory
+  # Обнавляем репозиторий и устанавливаем mysql-client
+  # Для подключения к БД 
+  before_script:
+    - apt update
+    - apt install mysql-client
+  # Подключаемся к БД и запускаем селект из файла.   
+  script:
+    - mysql --user rfamro --host mysql-rfam-public.ebi.ac.uk --port 4497 --database Rfam -e 'source select.sql'
+    
+   

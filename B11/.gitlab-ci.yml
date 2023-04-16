@@ -1,0 +1,108 @@
+# Используем базовый ubuntu image
+image: "ubuntu:latest"
+
+# Включаем правила запуска paypline
+# Запускаем наш paypline только в том случае если 
+# изменения были в файле index.html 
+workflow:
+  rules:
+    - changes:
+        - index.html
+
+# определяем переменные  для имени приложения
+# и пути в репозитории.
+variables:
+  TAG_LATEST: $CI_REGISTRY_IMAGE/$APP_NAME-$BRANCH_NAME:latest
+  APP_NAME: skill
+
+
+# Указываем наши stage
+stages:
+  - build image
+  - deploy
+  - check_status_code
+  - chekc_md5
+  - delete
+
+# Собираем docker образ используя Dockerfile в проекте
+# пушим образ в локальный регистр gitlab 
+build image:
+    image: docker:latest
+    stage: build image
+    tags:
+    - deployment
+    script:
+    - docker login -u $CI_USER -p $CI_TOKEN registry.git.fido.uz
+    - docker build -t registry.git.fido.uz/nikolay.minakov/skilfaktory .
+    - docker push registry.git.fido.uz/nikolay.minakov/skilfaktory
+
+# Подключаемся к серверу где будем запускать контейнер с nginx 
+# и стартуем контейнер с именем skill
+deploy:
+  image: alpine:latest
+  stage: deploy
+  tags:
+    - deployment
+  script:
+    - chmod og= $ID_RSA
+    - apk update && apk add openssh-client
+    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker login -u $CI_USER -p $CI_TOKEN registry.git.fido.uz"
+    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker pull registry.git.fido.uz/nikolay.minakov/skilfaktory"
+    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker run -dp 9889:80  --name $APP_NAME  registry.git.fido.uz/nikolay.minakov/skilfaktory"
+
+
+# проверка статуса ответа сервера
+check_status_code:
+  stage: check_status_code
+  image: ubuntu:latest
+  tags:
+    - deployment
+  before_script:
+    # Устанавливаем curl так-как в базовом образе его нет.
+    - apt -y  update && apt -y install curl
+  script:
+    # Запускаем curl для проверки статуса и сохраняем в переменную response
+    - response=$(curl -s -o /dev/null -w "%{http_code}" http://10.50.50.38:9889/index.html)
+    # Проверяем переменную response
+    # Если ответ 200 ничего не делаем
+    - >
+      if [ $response == "200" ]; then
+        echo "No Problem"
+      # Если ответ не 200 то отвправляем сообщение в чат Slack
+      else
+        curl -X POST -H "Content-type:/ application/json" --data '{"text":"Произошла ошибка при проверке HTTP статуса"}' https://hooks.slack.com/services/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
+      fi
+   
+chekc_md5:
+  stage: chekc_md5
+  image: ubuntu:latest
+  tags:
+    - deployment
+  before_script:
+    # Устанавливаем curl и ucommon-utils так-как в базовом образе его нет.
+    - apt -y update && apt -y install curl ucommon-utils
+  script:
+    # Запускаем curl для сохранения файла с nginx
+    - curl http://10.50.50.38:9889/index.html  --output from_site.html
+    # проверяем md5 файла из репозитория и файла с сайта.
+    - a=$(md5sum index.html | awk '{print $1}')
+    - b=$(md5sum from_site.html | awk '{print $1}')
+    # Если md5 одинаковы то ничего не делаем.
+    # Если файлы разные то  отвправляем сообщение в чат Slack
+    - > 
+      if [[ "$a" == "$b" ]]; then
+        echo "No problem"
+      else
+        curl -X POST -H "Content-type:/ application/json" --data '{"text":"Произошла ошибка при проверке md5 "}' https://hooks.slack.com/services/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
+      fi
+
+# Подключаемся к серверу и удаляем контейнер.
+delete:
+  image: alpine:latest
+  stage: delete
+  before_script:
+    - chmod og= $ID_RSA
+    - apk update && apk add openssh-client
+  script:
+    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker container rm -f $APP_NAME|| true"
+    - ssh -i $ID_RSA -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker rmi registry.git.fido.uz/nikolay.minakov/skilfaktory || true"

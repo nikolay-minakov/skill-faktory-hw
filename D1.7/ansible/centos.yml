@@ -1,0 +1,30 @@
+---
+    # Playbook для Установки docker на centos
+    # Устанавливаем yum utils 
+    - name: Install yum-utils
+      ansible.builtin.yum:
+        name: yum-utils
+    # добавляем через свежеустановленный yum-utils repo докера
+    - name: Add repo
+      ansible.builtin.command:
+        cmd: yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+    # Устанавливаем docker и все что ему нужно
+    - name: Instal Docker latest
+      ansible.builtin.yum:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+    # Включаем Docker как демон что при старте работал
+    - name: Enable Docker systemd
+      ansible.builtin.systemd:
+        name: docker
+        enabled: true
+        masked: no
+    # Запускаем сам демон Docker и радуемся что все работает!!!
+    - name: Start Docker Service
+      ansible.builtin.systemd:
+        name: docker
+        state: started

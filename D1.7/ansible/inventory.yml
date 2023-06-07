@@ -1,0 +1,5 @@
+[docker]
+vm2 ansible_host=10.50.50.100
+vm3 ansible_host=10.50.50.101
+vm1 ansible_host=10.50.50.102
+

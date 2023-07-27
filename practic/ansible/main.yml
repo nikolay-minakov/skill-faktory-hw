@@ -1,0 +1,22 @@
+# Основной playbook в котором идет вызов ролей для серверов
+---
+- hosts: all
+  gather_facts: no
+  become: yes
+  roles:
+    - docker
+    - users
+ 
+- hosts: gitlab
+  gather_facts: no
+  become: yes
+  roles:
+    - gitlabs
+
+- hosts: cicd-register-monitoring
+  gather_facts: no
+  become: yes
+  roles:
+    - cicd
+    - register
+    - monitoring

@@ -1,0 +1,18 @@
+---
+# создаем папку на сервере где будет лежать compose-file
+- name: Download foo.conf
+  ansible.builtin.get_url:
+    url: https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-linux-amd64
+    dest: /usr/local/bin/gitlab-runner
+    mode: '0700'
+
+- name: Run command
+  command: useradd --comment 'GitLab Runner' --create-home gitlab-runner --shell /bin/bash
+
+- name: Run command
+  command: gitlab-runner install --user=gitlab-runner --working-directory=/home/gitlab-runner
+
+- name: Run command
+  command: gitlab-runner start
+
+

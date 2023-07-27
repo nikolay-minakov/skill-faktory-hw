@@ -1,0 +1,70 @@
+# Используем базовый ubuntu image
+image: "ubuntu:latest"
+
+# Включаем правила запуска paypline
+# Запускаем наш paypline только в том случае если 
+# изменения были в файле сайта
+workflow:
+  rules:
+    - changes:
+        - app/*
+
+# определяем переменные  для имени приложения
+# и пути в репозитории.
+variables:
+  TAG_LATEST: $CI_REGISTRY_IMAGE/$APP_NAME-$BRANCH_NAME:latest
+  APP_NAME: skill
+
+
+# Указываем наши stage
+stages:
+  - build image
+  - deploy
+  - check_status_code
+
+
+# Собираем docker образ используя Dockerfile в проекте
+# пушим образ в локальный регистр 
+build image:
+    image: docker:latest
+    stage: build image
+    tags:
+    - deployment
+    script:
+    - docker build -t 192.168.80.103:5000/nikolay.minakov/myapp .
+    - docker push 192.168.80.103:5000/nikolay.minakov/myapp
+
+# Подключаемся к серверу где есть kubectl
+# копируем helm chart и запускаем его
+deploy:
+  image: alpine:latest
+  stage: deploy
+  tags:
+    - deployment
+  script:
+    - cp myapp.yml /root/myapp.yml
+    - cp -r myapp-chart/* /root/myapp_chart/
+
+
+# проверка статуса ответа сервера
+check_status_code:
+  stage: check_status_code
+  image: ubuntu:latest
+  tags:
+    - deployment
+  before_script:
+    # Устанавливаем curl так-как в базовом образе его нет.
+    - apt -y  update && apt -y install curl
+  script:
+    # Запускаем curl для проверки статуса и сохраняем в переменную response
+    - response=$(curl -s -o /dev/null -w "%{http_code}" http://192.168.80.1:3003/index.html)
+    # Проверяем переменную response
+    # Если ответ 200 ничего не делаем
+    - >
+      if [ $response == "200" ]; then
+        echo "No Problem"
+      # Если ответ не 200 то отвправляем сообщение в чат Slack
+      else
+        curl -X POST -H "Content-type:/ application/json" --data '{"text":"Произошла ошибка при проверке HTTP статуса"}' https://hooks.slack.com/services/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
+      fi
+   

@@ -1,0 +1,13 @@
+[all] # Общая группа серверов для всех машин на которые мы ставим все необходимое
+vm0 ansible_host=192.168.80.100 # Сервер для GitLab
+vm1 ansible_host=192.168.80.1 # Сервер для control plane kubernetis
+vm2 ansible_host=192.168.80.2 # Сервер для worker node  kubernetis
+vm3 ansible_host=192.168.80.3 # Сервер для ci/cd  kubernetis
+
+[gitlab] # Общая группа серверов  GItlab 
+vm0 ansible_host=192.168.80.100
+
+[cicd-register-monitoring]  # Общая группа серверов  для CICD, register, monitoring
+vm0 ansible_host=192.168.80.3
+
+

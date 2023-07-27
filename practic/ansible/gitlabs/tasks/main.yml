@@ -1,0 +1,22 @@
+---
+# создаем папку на сервере где будет лежать compose-file
+- name: Create compose-file dir 
+  ansible.builtin.file:
+    path: /root/compose-file
+    state: directory
+    owner: root
+    group: wheel
+    mode: 0700
+
+# Копируем заранее созданный compose-file в ~root/compose-file
+- name: Copy file to 
+  ansible.builtin.copy:
+    src:  docker-compose.yml
+    dest: /root/compose-file/docker-compose.yml
+    owner: root
+    group: wheel
+    mode: 0700
+
+- name: Run compose
+  command: chdir=/root/compose-file  docker compose up -d
+
